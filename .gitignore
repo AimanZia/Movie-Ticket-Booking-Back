@@ -1,0 +1,11 @@
+# Global ignores
+/node_modules/
+/.idea/
+/.vscode/
+/target/
+*.log
+*.class
+
+# Ignore build and environment files
+*.env
+*.tmp
