@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Compiled class file
 *.class
 
@@ -22,3 +23,16 @@
 # virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
 hs_err_pid*
 replay_pid*
+=======
+# Global ignores
+/node_modules/
+/.idea/
+/.vscode/
+/target/
+*.log
+*.class
+
+# Ignore build and environment files
+*.env
+*.tmp
+>>>>>>> master
