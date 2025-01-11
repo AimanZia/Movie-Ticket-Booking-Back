@@ -13,6 +13,7 @@ import org.springframework.web.client.RestTemplate;
 
 import User.entities.User;
 import User.exceptions.ResourceNotFoundException;
+import User.extrenal.services.BookingService;
 import User.repositories.UserRepo;
 import jakarta.transaction.Transactional;
 
@@ -36,6 +37,9 @@ public class UserService {
     @Value("${bookings.user.url}")
     private String bookingsUserUrl;
 
+    @Autowired
+    private BookingService bookingServiceClient;
+
     public User findByEmail(String userEmail){
         return this.userRepo.findByEmail(userEmail);
     }
@@ -45,21 +49,18 @@ public class UserService {
     }
 
     public User findUserById(Integer userId){
-
-        User searchedUser = this.userRepo.findById(userId).orElseThrow((()-> new ResourceNotFoundException("User", "Id", userId)));
-
-        return searchedUser;
+        return this.userRepo.findById(userId).orElseThrow((()-> new ResourceNotFoundException("User not found")));
     }
 
     public void deleteUser(Integer userId){
-        User searchedUser = this.userRepo.findById(userId).orElseThrow((()-> new ResourceNotFoundException("User", "Id", userId)));
+        User searchedUser = this.userRepo.findById(userId).orElseThrow((()-> new ResourceNotFoundException("User not found")));
         String deleteBookingsByUserCode = deleteBookingsByUser(userId);
         if(!deleteBookingsByUserCode.equals("200 OK")){
-            throw new ResourceNotFoundException("Booking","BookingUserId" , userId);
+            throw new ResourceNotFoundException("Booking not found");
         }
         String deleteWalletByUserCode = deleteWalletByUser(userId);
         if(!deleteWalletByUserCode.equals("200 OK")){
-            throw new ResourceNotFoundException("Wallet","WalletId" , userId);
+            throw new ResourceNotFoundException("Wallet not found for User");
         }
         this.userRepo.delete(searchedUser);
     }
