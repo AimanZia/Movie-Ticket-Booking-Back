@@ -1,6 +1,5 @@
 package User.controller;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -19,17 +18,20 @@ import User.service.UserService;
 @RequestMapping("/users")
 @CrossOrigin(origins = {"http://localhost:8081/bookings","http://localhost:8082/wallets"})
 public class UserController {
-    
-    @Autowired
-    private UserService userService;
+
+    private final UserService userService;
+
+    public UserController(UserService userService){
+        this.userService=userService;
+    }
 
     @PostMapping
     public ResponseEntity<User> createUser(@RequestBody User request) {
-        if (userService.findByEmail(request.getEmail()) != null) {
+
+        if(userService.findByEmail(request.getEmail()).isPresent()){
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(null);
         }
-
         User user = this.userService.createUser(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(user);
     }
@@ -42,14 +44,16 @@ public class UserController {
     }
     
     @DeleteMapping("/{userId}")            
-    public ResponseEntity<Void> deleteUser(@PathVariable Integer userId) {    
+    public ResponseEntity<?> deleteUser(@PathVariable Integer userId){    
         this.userService.deleteUser(userId);    
         return ResponseEntity.ok().build();
     }
 
     @DeleteMapping
-    public ResponseEntity<Void> deleteAllUsers() {
+    public ResponseEntity<?> deleteAllUsers(){
         this.userService.deleteAllUsers();
         return ResponseEntity.ok().build();
     }
+
 }
+

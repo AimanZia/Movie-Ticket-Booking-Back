@@ -1,12 +1,14 @@
 package User.repositories;
 
 
+import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
+import org.springframework.stereotype.Repository;
 
 import User.entities.User;
 
+@Repository
 public interface UserRepo extends JpaRepository<User,Integer>{
 
-    public User findByEmail(String email);
+    Optional<User> findByEmail(String email);
 } 

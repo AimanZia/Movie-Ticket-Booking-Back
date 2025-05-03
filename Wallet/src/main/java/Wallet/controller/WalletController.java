@@ -37,10 +37,12 @@ public class WalletController {
     }
     
     @PutMapping("/{userId}")
-    public ResponseEntity<Object> updateWallet(@PathVariable Integer userId, @RequestBody WalletUpdateRequest request) {
-        String userStatus = this.walletService.chcekIfUserExists(userId);
+    public ResponseEntity<?> updateWallet(@PathVariable Integer userId, @RequestBody WalletUpdateRequest request) {
+        System.out.println(request.getAction());
+        System.out.println(request.getAmount());
+        boolean userStatus = this.walletService.chcekIfUserExists(userId);
         
-        if(userStatus==null || !(userStatus).equals("200 OK")){
+        if(!userStatus){
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("User Does not Exists");
         }
 

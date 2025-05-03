@@ -13,7 +13,7 @@ public class Wallet {
     private Integer userId;
 
     @Column(nullable = false)
-    @JsonProperty("user_id")
+    @JsonProperty("balance")
     private Double balance;
 
     public Integer getUserId() {

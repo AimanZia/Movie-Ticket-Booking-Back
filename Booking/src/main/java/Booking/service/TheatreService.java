@@ -31,7 +31,7 @@ public class TheatreService {
             String[] line;
             reader.readNext(); // Skip header
             while ((line = reader.readNext()) != null) {
-               Theatre theatre = new Theatre();
+                Theatre theatre = theatreRepository.findById(Integer.parseInt(line[0])).orElse(new Theatre());
                theatre.setId(Integer.parseInt(line[0]));
                theatre.setName(line[1]);
                theatre.setLocation(line[2]);

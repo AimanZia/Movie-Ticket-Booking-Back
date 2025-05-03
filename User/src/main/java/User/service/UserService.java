@@ -1,42 +1,30 @@
 package User.service;
 
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Component;
+import java.util.Optional;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
-
 import User.entities.User;
 import User.exceptions.ResourceNotFoundException;
+import User.external.services.BookingService;
+import User.external.services.WalletService;
 import User.repositories.UserRepo;
 import jakarta.transaction.Transactional;
 
 @Service
 @Transactional
-@Component
 public class UserService {
-    
-    @Autowired
-    private UserRepo userRepo;
 
-    @Autowired
-    private RestTemplate restTemplate;
+    private final UserRepo userRepo;
+    private final BookingService bookingServiceClient;
+    private final WalletService walletSerivceClient;
 
-    @Value("${wallet.url}")
-    private String walletUrl;
+    public UserService(UserRepo userRepo,BookingService bookingService,WalletService walletService){
+        this.userRepo = userRepo;
+        this.bookingServiceClient  = bookingService;
+        this.walletSerivceClient = walletService;
+    }
 
-    @Value("${bookings.url}")
-    private String bookingsUrl;
-
-    @Value("${bookings.user.url}")
-    private String bookingsUserUrl;
-
-    public User findByEmail(String userEmail){
+    public Optional<User> findByEmail(String userEmail){
         return this.userRepo.findByEmail(userEmail);
     }
 
@@ -45,21 +33,17 @@ public class UserService {
     }
 
     public User findUserById(Integer userId){
-
-        User searchedUser = this.userRepo.findById(userId).orElseThrow((()-> new ResourceNotFoundException("User", "Id", userId)));
-
-        return searchedUser;
+        return this.userRepo.findById(userId).orElseThrow((()-> new ResourceNotFoundException("User not found")));
     }
 
     public void deleteUser(Integer userId){
-        User searchedUser = this.userRepo.findById(userId).orElseThrow((()-> new ResourceNotFoundException("User", "Id", userId)));
-        String deleteBookingsByUserCode = deleteBookingsByUser(userId);
-        if(!deleteBookingsByUserCode.equals("200 OK")){
-            throw new ResourceNotFoundException("Booking","BookingUserId" , userId);
+        User searchedUser = this.userRepo.findById(userId).orElseThrow((()-> new ResourceNotFoundException("User not found")));
+
+        if(!deleteBookingsByUser(userId)){
+            throw new ResourceNotFoundException("Booking For User not found");
         }
-        String deleteWalletByUserCode = deleteWalletByUser(userId);
-        if(!deleteWalletByUserCode.equals("200 OK")){
-            throw new ResourceNotFoundException("Wallet","WalletId" , userId);
+        if(!deleteWalletByUser(userId)){
+            throw new ResourceNotFoundException("Wallet for User Not found");
         }
         this.userRepo.delete(searchedUser);
     }
@@ -70,94 +54,15 @@ public class UserService {
     }
 
     private void deleteAllBookingWallet() {
-        String url = walletUrl;
-
-        try {
-            HttpHeaders headers = new HttpHeaders();
-            HttpEntity<String> entity = new HttpEntity<>(headers);
-
-            ResponseEntity<String> responseEntity = restTemplate.exchange(
-                    url,
-                    HttpMethod.DELETE,
-                    entity,
-                    String.class
-            );
-
-            System.out.println("Status code: " + responseEntity.getStatusCode());
-            System.out.println("Response body: " + responseEntity.getBody());
-        }
-        catch(Exception e){
-            e.printStackTrace();
-        }
-
-        String urlBooking = bookingsUrl;
-
-        try {
-            HttpHeaders headers = new HttpHeaders();
-            HttpEntity<String> entity = new HttpEntity<>(headers);
-
-            ResponseEntity<String> responseEntity = restTemplate.exchange(
-                    urlBooking,
-                    HttpMethod.DELETE,
-                    entity,
-                    String.class
-            );
-
-            System.out.println("Status code: " + responseEntity.getStatusCode());
-            System.out.println("Response body: " + responseEntity.getBody());
-        }
-        catch(Exception e){
-            e.printStackTrace();
-        }
+        this.bookingServiceClient.deleteAllUserBookings();
+        this.walletSerivceClient.deleteAllUserWallet();
     }
 
-    private String deleteBookingsByUser(Integer userId){
-        String url = bookingsUserUrl+userId;
-
-        try {
-            HttpHeaders headers = new HttpHeaders();
-            HttpEntity<String> entity = new HttpEntity<>(headers);
-
-            ResponseEntity<String> responseEntity = restTemplate.exchange(
-                    url,
-                    HttpMethod.DELETE,
-                    entity,
-                    String.class
-            );
-
-            System.out.println("Status code: " + responseEntity.getStatusCode());
-            System.out.println("Response body: " + responseEntity.getBody());
-
-            return responseEntity.getStatusCode().toString();
-        }
-        catch(Exception e){
-            e.printStackTrace();
-            return null;
-        }
+    private boolean deleteBookingsByUser(Integer userId){
+        return this.bookingServiceClient.deleteBookingByUser(userId).getStatusCode().is2xxSuccessful();
     }
 
-    private String deleteWalletByUser(Integer userId){
-        String url = walletUrl+"/"+userId;
-
-        try {
-            HttpHeaders headers = new HttpHeaders();
-            HttpEntity<String> entity = new HttpEntity<>(headers);
-
-            ResponseEntity<String> responseEntity = restTemplate.exchange(
-                    url,
-                    HttpMethod.DELETE,
-                    entity,
-                    String.class
-            );
-
-            System.out.println("Status code: " + responseEntity.getStatusCode());
-            System.out.println("Response body: " + responseEntity.getBody());
-
-            return responseEntity.getStatusCode().toString();
-        }
-        catch(Exception e){
-            e.printStackTrace();
-            return null;
-        }
+    private boolean deleteWalletByUser(Integer userId){
+        return this.walletSerivceClient.deleteWalletByUser(userId).getStatusCode().is2xxSuccessful();
     }
 }
