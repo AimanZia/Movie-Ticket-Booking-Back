@@ -8,9 +8,9 @@ import org.springframework.web.bind.annotation.PathVariable;
 @FeignClient(name = "WALLET-SERVICE")
 public interface WalletService {
     
-    @DeleteMapping("/{user_id}")
+    @DeleteMapping("/wallets/{user_id}")
     ResponseEntity<?> deleteWalletByUser(@PathVariable("user_id") Integer userId);
 
-    @DeleteMapping()
+    @DeleteMapping("/wallets")
     ResponseEntity<?> deleteAllUserWallet();
 }

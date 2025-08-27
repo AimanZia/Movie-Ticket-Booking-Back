@@ -8,10 +8,10 @@ import org.springframework.web.bind.annotation.PathVariable;
 @FeignClient(name="BOOKING-SERVICE")
 public interface BookingService {
 
-    @DeleteMapping("/users/{user_id}")
+    @DeleteMapping("/bookings/users/{user_id}")
     ResponseEntity<?> deleteBookingByUser(@PathVariable("user_id") Integer userId);
 
-    @DeleteMapping("")
+    @DeleteMapping("/bookings")
     ResponseEntity<?> deleteAllUserBookings();
     
 }

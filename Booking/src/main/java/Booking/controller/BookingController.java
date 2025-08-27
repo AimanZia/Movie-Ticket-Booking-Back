@@ -26,6 +26,7 @@ import Booking.entities.Show;
 import Booking.payload.BookingDto;
 import Booking.service.BookingService;
 import Booking.service.ShowService;
+import jakarta.ws.rs.core.MediaType;
 
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -70,6 +71,7 @@ public class BookingController {
         
         Double walletAmount = Double.parseDouble(checkForWalletDetails(bookingRequest.getUserId()));
         Integer bookingCost = show.getPrice()*bookingRequest.getSeatsBooked();
+        System.out.println("Wallet Details"+walletAmount);
         if((walletAmount - bookingCost) < 0 ){
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Insufficient Balanace");
         }
@@ -93,30 +95,30 @@ public class BookingController {
         return ResponseEntity.ok(bookingByUserDto);
     }
 
-    @DeleteMapping
-    public ResponseEntity<?> deleteAllBookings() {
+    @DeleteMapping(value = MediaType.APPLICATION_JSON)
+    public ResponseEntity<Map<String,String>> deleteAllBookings() {
         bookingService.deleteAllBookings();
-        return ResponseEntity.ok("All bookings deleted successfully.");
+        return ResponseEntity.ok(Map.of("Message","All bookings deleted successfully."));
     }
 
-    @DeleteMapping("/users/{user_id}")
+    @DeleteMapping(value = "/users/{user_id}",produces = MediaType.APPLICATION_JSON)
     public ResponseEntity<?> deleteBookingsByUser(@PathVariable("user_id") Integer userId) {
         Integer amountToCredit = bookingService.deleteBookingsByUser(userId);
         if(amountToCredit==null){
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Wallet Error");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("message", "Wallet Error"));
         }
         updateBalance(amountToCredit, userId,"credit");
-        return ResponseEntity.ok("Bookings for user " + userId + " deleted successfully.");
+        return ResponseEntity.ok(Map.of("message","Bookings for user " + userId + " deleted successfully."));
     }
 
-    @DeleteMapping("/users/{user_id}/shows/{show_id}")
+    @DeleteMapping(value="/users/{user_id}/shows/{show_id}",produces = MediaType.APPLICATION_JSON)
     public ResponseEntity<?> deleteBookingsByUserAndShow(@PathVariable("user_id") Integer userId, @PathVariable("show_id") Integer showId) {
         Integer amountToCredit = bookingService.deleteBookingsByUserAndShow(userId, showId);
         if(amountToCredit==null){
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Wallet Error");
         }
         updateBalance(amountToCredit, userId,"credit");
-        return ResponseEntity.ok("Bookings for user " + userId + " and show " + showId + " deleted successfully.");
+        return ResponseEntity.ok(Map.of("message","Bookings for user " + userId + " and show " + showId + " deleted successfully."));
     }
     
     private String checkUserExists(Integer userId){

@@ -1,24 +1,19 @@
-package Wallet.entities;
+package Wallet.entities.DTOs;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-@Entity
-@AllArgsConstructor
 @Getter
 @Setter
+@AllArgsConstructor
 @NoArgsConstructor
-public class Wallet {
-    @Id
-    @Column(nullable = false)
+public class WalletResponseBodyDTO {
+    @JsonProperty("user_id")
     private Integer userId;
-
-    @Column(nullable = false)
+    @JsonProperty("balance")
     private Double balance;
 }
-
